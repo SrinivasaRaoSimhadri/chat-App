@@ -14,14 +14,8 @@ const userSchema = new mongoose.Schema({
         required: true,
         min: 6
     },
-    gender: {
-        type: String,
-        required: true,
-        enum: ["male", "female"]
-    },
     profilePic: {
         type: String,
-        default: "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png"
     }
 },{
     timestamps: true

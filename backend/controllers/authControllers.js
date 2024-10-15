@@ -4,7 +4,7 @@ import generateTokenAndSetCookie from "../utils/token.js";
 
 export const signup = async (req, res) => {
     try {
-        const {fullName, userName, password, confirmPassword, gender, profilePic} = req.body;
+        const {fullName, userName, password, confirmPassword, profilePic} = req.body;
         if(!fullName || !userName) {
             return res.status(400).json({error: "name and username are required"});
         }
@@ -21,8 +21,7 @@ export const signup = async (req, res) => {
             fullName,
             userName,
             password: hashedPassword,
-            gender,
-            profilePic
+            profilePic: profilePic || "https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png"
         });
         await newUser.save();
         generateTokenAndSetCookie(newUser._id, res);
@@ -30,7 +29,6 @@ export const signup = async (req, res) => {
             _id: newUser._id,
             fullName,
             userName,
-            gender,
             profilePic
         })
     } catch (error) {
@@ -67,7 +65,7 @@ export const login = async (req, res)=> {
 export const logout = (req, res) => {
     try {
         res.cookie("jwt", {maxAge:0});
-        res.status(200).json({message: "loggeg out successfully"});
+        return res.status(200).json({message: "loggeg out successfully"});
     } catch (error) {
         return res.status(400).json({error: error.message});
     }
