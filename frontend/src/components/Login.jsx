@@ -4,8 +4,8 @@ import { addUser } from "../store/userSlice.jsx";
 import { useDispatch } from "react-redux";
 
 const Login =()=> {
-    const [userName, setUserName] = useState("Mr.prabas");
-    const [password, setPassword] = useState("123456");
+    const [userName, setUserName] = useState("");
+    const [password, setPassword] = useState("");
     const navigate = useNavigate();
     const dispatch = useDispatch();
 

@@ -5,16 +5,19 @@ import EntryPage from "./EntryPage";
 
 
 const Home = () => {
+    
     const path = useLocation();
     return (
-        <div className="flex py-3">
-            <div className="w-1/3">
-                <SideBar />
-            </div>
-            <div className="w-2/3">
-                {
-                    path.pathname ==="/api/messages/send"? <EntryPage/> :<MessageContainer/>
-                }
+        <div className="fixed">
+            <div className="flex mt-2">
+                <div className="">
+                    <SideBar />
+                </div>
+                <div className="">
+                    {
+                        path.pathname ==="/api/messages/send"? <EntryPage/> :<MessageContainer/>
+                    }
+                </div>
             </div>
         </div>
     );

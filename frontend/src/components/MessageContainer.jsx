@@ -2,7 +2,10 @@ import { useParams } from "react-router-dom";
 import Messages from "./messages";
 import { IoIosSend } from "react-icons/io";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { io } from "socket.io-client";
+import { addConnection, removeConnection } from "../store/socketSlice";
+import { cleanMode, updateMode } from "../store/modeSlice";
 
 const MessageContainer = () => {
 
@@ -10,7 +13,10 @@ const MessageContainer = () => {
     const [receiver, setReceiver] = useState({});
     const [newMessage, setNewMessage] = useState("");
     const [messages, setMessages] = useState([]);
+    const [newSocket, setNewSocket] = useState(null);
     const user = useSelector((store)=>store.user);
+    const socket = useSelector((store)=>store.socket);
+    const dispatch = useDispatch();
 
     const getReceiverUser = async () => {
         try {
@@ -30,19 +36,12 @@ const MessageContainer = () => {
     const sendMessage = async () => {
         if(newMessage.trim()==="") return;
         try {
-            const response = await fetch(`http://localhost:3000/api/messages/send/${receiverId}`, {
-                method: "POST",
-                headers: {
-                    "Content-type": "application/json"
-                },
-                body: JSON.stringify({message: newMessage}),
-                credentials: "include"
-            })
-            if(!response.ok) {
-                throw new error("coudnt sent message");
+            const msgDetails = {
+                senderId: user._id,
+                receiverId: receiverId,
+                message: newMessage
             }
-            const messageDocument = await response.json();
-            setMessages((previousMessages) => [...previousMessages, messageDocument]);
+            newSocket.emit("new message", msgDetails);
             setNewMessage("");
         } catch (error) {
             console.log(error.message);
@@ -69,16 +68,57 @@ const MessageContainer = () => {
             sendMessage();
         }
     }
+
+    useEffect(()=>{
+
+        let newSocket;
+        if(!socket) {
+
+            newSocket = io("http://localhost:3000", {withCredentials: true});
+            setNewSocket(newSocket);
+
+            newSocket.on('connect', ()=>{
+                dispatch(addConnection({socketId: newSocket.id}));
+                console.log('Socket connected:', newSocket.id);
+            })
+
+            newSocket.on("message sent", (message)=>{
+                setMessages((previousMessages) => [...previousMessages, message]);
+            })
+
+            newSocket.on('disconnect', () => {
+                dispatch(removeConnection());
+                console.log('Socket disconnected');
+            });
+
+            newSocket.on("online users", (onlineUsers) => {
+                dispatch(updateMode(onlineUsers));
+            })
+
+        }
+
+        return () => {
+            newSocket?.off('connect');
+            newSocket?.off('message sent');
+            newSocket?.off('disconnect');
+            newSocket?.off("online users");
+            dispatch(cleanMode());
+            newSocket?.close();
+        }
+
+    },[]); 
+
     useEffect(()=>{
         getMessages();
         getReceiverUser();
     },[receiverId])
 
+
     return (
-        <div className="fixed flex flex-col h-screen w-[1150px] -ml-[130px]">
-            <div className="bg-base-300 p-2 rounded-md ml-2">
+        <div className="h-screen flex flex-col justify-between pb-4">
+            <div className="bg-base-300 p-2 rounded-md ml-2 sm:w-[440px] md:w-[500px] lg:w-[1120px]">
                 <div className="flex items-center gap-3">
-                    <div className="avatar online">
+                    <div className="avatar">
                         <div className="w-11 rounded-full">
                             <img alt= "receiver" src={receiver?.profilePic} />
                         </div>
@@ -86,10 +126,10 @@ const MessageContainer = () => {
                     <h2 className="font-bold">{receiver?.fullName}</h2>
                 </div>
             </div>
-            <div className="flex-grow overflow-y-scroll p-6 w-[1180px]">
+            <div className="flex-grow overflow-y-scroll sm:w-[420px] md:w-[500px] lg:w-[1100px]">
                 <Messages messages = {messages}/>
             </div>
-            <div className="bg-base-300 rounded-md mx-2 mb-5 w-[1140px]">
+            <div className="bg-base-300 rounded-md sm:w-[450px] md:w-[500px] lg:w-[1130px]">
                 <div className="flex items-center justify-center">
                 <input 
                     value={newMessage}

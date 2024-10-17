@@ -3,7 +3,6 @@ import Message from "./Message";
 import { useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 const Messages = ({messages})=>{
-    console.log(messages);
     const user = useSelector((state) => state.user);
     const [receiver, setReceiver] = useState({});
     const {id: receiverId} = useParams();
@@ -17,7 +16,7 @@ const Messages = ({messages})=>{
                 credentials: "include"
             })
             if(!response.ok) {
-                throw new error("coudnt fetch messages");
+                throw new error("coudnt fetch details");
             }
             const receiverDetails = await response.json();
             setReceiver(receiverDetails);

@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema({
     },
     profilePic: {
         type: String,
+    },
+    mode: {
+        type: String,
+        enum: ["Online", "Offline"],
     }
 },{
     timestamps: true

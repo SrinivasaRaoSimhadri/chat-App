@@ -1,44 +1,40 @@
 import Conversation from "../models/conversationModel.js";
 import Message from "../models/messageModel.js";
 
-export const sendMessage = async (req, res) => {
+export const sendMessage = async (socket, messageDoc, onlineUsers) => {
     try {
-        const { message } = req.body;
-        const { id: receiverId } = req.params;
-        const senderId = req.user._id.toString();
-
+        const { senderId, receiverId, message} = messageDoc;
         let conversation = await Conversation.findOne({
             participants: {
                 $all: [senderId, receiverId]
             }
         })
-
         if(!conversation) {
             conversation = new Conversation({
                 participants: [senderId, receiverId]
             })
         }
-
         const newMessage = new Message({
             senderId, 
             receiverId,
             message
         })
         conversation.messages.push(newMessage._id);
-        // await newMessage.save();
-        // await conversation.save();
         await Promise.all([newMessage.save(), conversation.save()]);
-        res.status(201).json(newMessage);
+
+        if(onlineUsers[receiverId]) {
+            socket.to(onlineUsers[receiverId]).emit("message sent", newMessage);
+        }
+        socket.emit("message sent", newMessage);
     } catch (error) {
-        res.status(400).json({error: error.error});
+        socket.emit("error", {message: "coudnnt send message"});
     }
 }
 
 export const getMessages = async (req, res) => {
     try {
         const {id: userToChatId} = req.params;
-        const senderId = req.user._id;
-
+        const senderId = req.user._id.toString();
         const conversation = await Conversation.findOne({
             participants:{
                 $all: [senderId, userToChatId]

@@ -11,7 +11,7 @@ const protectRoute = async (req, res, next) => {
         if(!decoded) {
             return res.status(401).json({error: "invalid token"});
         }
-        const user = await User.findById(decoded.userId);
+        const user = await User.findById(decoded.userId, "-password");
         req.user = user;
         next();
     } catch (error) {

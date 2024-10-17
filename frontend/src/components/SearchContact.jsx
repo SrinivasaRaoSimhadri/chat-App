@@ -1,8 +1,9 @@
 import { CiLogout } from "react-icons/ci";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 const SearchContact = ({search, setSearch, setEntrySelector}) => {
     const user = useSelector((state)=>state.user);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const rendereToEntryPage = () =>{
         setEntrySelector(false);
@@ -29,15 +30,15 @@ const SearchContact = ({search, setSearch, setEntrySelector}) => {
                 <CiLogout/>
             </div>
             <div onClick={rendereToEntryPage} className="avatar hover:cursor-pointer">
-                <div className="w-10 rounded-full border">
+                <div className="w-10 rounded-full border ">
                     <img alt= "user" src={user?.profilePic} />
                 </div>
             </div>
-            <div className="flex-grow max-w-[270px]">
+            <div className="flex-grow">
                 <input
                     value={search}
                     onChange={(e)=>setSearch(e.target.value)}
-                    className="bg-base-200 rounded-lg w-full py-2 px-4 outline-none"
+                    className="bg-base-200 rounded-lg w-full py-2 px-4 outline-none sm:w-[185px] lg:w-[270px]"
                     placeholder="Search..."
                 />
             </div>
